@@ -1,9 +1,7 @@
-
 import React from 'react';
 
 interface CalendarTabProps {
     ramadanDays: number;
-    onSetRamadanDays: (days: number) => void;
     missedDays: boolean[];
     onToggleDay: (index: number) => void;
     year: number;
@@ -14,31 +12,13 @@ interface CalendarTabProps {
 }
 
 const CalendarTab: React.FC<CalendarTabProps> = ({
-    ramadanDays, onSetRamadanDays, missedDays, onToggleDay, year, onReset, totalMissed, totalMadeUp, totalRemaining
+    ramadanDays, missedDays, onToggleDay, year, onReset, totalMissed, totalMadeUp, totalRemaining
 }) => {
     return (
         <div className="space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-md">
                 <h2 className="text-xl font-bold text-gray-800 mb-2">📅 Marquer les jours non jeûnés</h2>
                 <p className="text-gray-600 mb-4">Cliquez sur les jours où vous n'avez pas jeûné pendant le Ramadan. Ils apparaîtront en rose.</p>
-                
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
-                    <span className="text-gray-700 font-medium">Nombre de jours du Ramadan :</span>
-                    <div className="flex gap-2">
-                        <button 
-                            className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${ramadanDays === 29 ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30' : 'bg-gray-200 text-gray-700'}`}
-                            onClick={() => onSetRamadanDays(29)}
-                        >
-                            29 jours
-                        </button>
-                        <button 
-                             className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${ramadanDays === 30 ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30' : 'bg-gray-200 text-gray-700'}`}
-                            onClick={() => onSetRamadanDays(30)}
-                        >
-                            30 jours
-                        </button>
-                    </div>
-                </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center gap-3">

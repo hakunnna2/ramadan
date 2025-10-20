@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Tab, Reminder } from './types';
 import Header from './components/Header';
 import Tabs from './components/Tabs';
@@ -9,18 +8,46 @@ import InfoTab from './components/InfoTab';
 import RemindersTab from './components/RemindersTab';
 import Footer from './components/Footer';
 import InstallPrompt from './components/InstallPrompt';
+import SaveIndicator from './components/SaveIndicator';
 
 const App: React.FC = () => {
     const [activeTab, setActiveTab] = useState<Tab>(Tab.Calendar);
-    const [ramadanDays, setRamadanDays] = useState<number>(() => parseInt(localStorage.getItem('ramadanDaysCount') || '30'));
-    const [missedDays, setMissedDays] = useState<boolean[]>(() => JSON.parse(localStorage.getItem('ramadanMissedDays') || `[]`));
+    const ramadanDays = 30; // Fixed number of days
+    const [missedDays, setMissedDays] = useState<boolean[]>(() => {
+        const stored = localStorage.getItem('ramadanMissedDays');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length === ramadanDays) {
+                    return parsed;
+                }
+            } catch (e) {
+                console.error("Failed to parse missedDays from localStorage", e);
+            }
+        }
+        return Array(ramadanDays).fill(false);
+    });
     const [madeUpDays, setMadeUpDays] = useState<number>(() => parseInt(localStorage.getItem('ramadanMadeUpDays') || '0'));
     const [reminders, setReminders] = useState<Reminder[]>(() => JSON.parse(localStorage.getItem('ramadanReminders') || '[]'));
 
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showInstallPrompt, setShowInstallPrompt] = useState<boolean>(false);
     
+    const [showSaveIndicator, setShowSaveIndicator] = useState<boolean>(false);
+    const saveIndicatorTimeoutRef = useRef<number | null>(null);
+    const isInitialMount = useRef(true);
+
     const currentYear = new Date().getFullYear();
+
+    const triggerSaveIndicator = useCallback(() => {
+        if (saveIndicatorTimeoutRef.current) {
+            clearTimeout(saveIndicatorTimeoutRef.current);
+        }
+        setShowSaveIndicator(true);
+        saveIndicatorTimeoutRef.current = window.setTimeout(() => {
+            setShowSaveIndicator(false);
+        }, 2000);
+    }, []);
 
     // Effect for PWA install prompt
     useEffect(() => {
@@ -38,33 +65,22 @@ const App: React.FC = () => {
 
     // State persistence effects
     useEffect(() => {
-        const storedMissedDays = JSON.parse(localStorage.getItem('ramadanMissedDays') || '[]');
-        if (storedMissedDays.length !== ramadanDays) {
-            setMissedDays(Array(ramadanDays).fill(false));
-        } else {
-            setMissedDays(storedMissedDays);
-        }
-    }, [ramadanDays]);
-
-    useEffect(() => {
-        localStorage.setItem('ramadanDaysCount', ramadanDays.toString());
-    }, [ramadanDays]);
-
-    useEffect(() => {
         localStorage.setItem('ramadanMissedDays', JSON.stringify(missedDays));
-    }, [missedDays]);
+        if (!isInitialMount.current) triggerSaveIndicator();
+    }, [missedDays, triggerSaveIndicator]);
 
     useEffect(() => {
         localStorage.setItem('ramadanMadeUpDays', madeUpDays.toString());
-    }, [madeUpDays]);
+        if (!isInitialMount.current) triggerSaveIndicator();
+    }, [madeUpDays, triggerSaveIndicator]);
 
     useEffect(() => {
         localStorage.setItem('ramadanReminders', JSON.stringify(reminders));
-    }, [reminders]);
+        if (!isInitialMount.current) triggerSaveIndicator();
+    }, [reminders, triggerSaveIndicator]);
 
     // Notification Scheduling Effect
     useEffect(() => {
-        // Fix: In a browser environment, setTimeout returns a number, not a NodeJS.Timeout object.
         const timeoutIds: number[] = [];
         if (Notification.permission === 'granted') {
             reminders.forEach(reminder => {
@@ -78,30 +94,24 @@ const App: React.FC = () => {
                             body: reminder.message,
                             icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌙</text></svg>',
                         });
-                        // Optional: auto-delete reminder after it fires
                         setReminders(prev => prev.filter(r => r.id !== reminder.id));
                     }, delay);
                     timeoutIds.push(timeoutId);
                 }
             });
         }
-        // Cleanup timeouts on component unmount or when reminders change
         return () => {
             timeoutIds.forEach(id => clearTimeout(id));
         };
     }, [reminders]);
 
-
-    const handleSetRamadanDays = (days: number) => {
-        setRamadanDays(days);
-        const newMissedDays = Array(days).fill(false);
-        setMissedDays(newMissedDays);
-        localStorage.setItem('ramadanMissedDays', JSON.stringify(newMissedDays));
-        if (madeUpDays > 0) {
-            setMadeUpDays(0);
-            localStorage.setItem('ramadanMadeUpDays', '0');
-        }
-    };
+    // This effect runs only once after the initial render.
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            isInitialMount.current = false;
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
     
     const handleToggleDay = (index: number) => {
         const newMissedDays = [...missedDays];
@@ -166,7 +176,6 @@ const App: React.FC = () => {
                 <div className={activeTab === Tab.Calendar ? '' : 'hidden'}>
                     <CalendarTab 
                         ramadanDays={ramadanDays}
-                        onSetRamadanDays={handleSetRamadanDays}
                         missedDays={missedDays}
                         onToggleDay={handleToggleDay}
                         year={currentYear}
@@ -196,6 +205,7 @@ const App: React.FC = () => {
                 </div>
             </main>
             
+            <SaveIndicator isVisible={showSaveIndicator} />
             <Footer />
         </div>
     );

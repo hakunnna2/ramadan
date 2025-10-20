@@ -1,32 +1,4 @@
-node_modules/
-dist/
-build/
-.env
-.env.*
-*.local
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-package-lock.json
-pnpm-lock.yaml
-.DS_Store
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-/.turbo
-/.parcel-cache
-coverage/
-*.tgz
-*.log
-/.pnp
-/.pnp.js
-*.bak
-*.tmp
-/*.tsbuildinfo# Logs
+# Logs
 logs
 *.log
 npm-debug.log*
