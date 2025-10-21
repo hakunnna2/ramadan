@@ -1,59 +1,58 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rattrap'Ramadan</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#9333ea">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Rattrap'Ramadan">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 rx=%2242%22 fill=%22%239333ea%22/><path d=%22M145.21 85.5A62.25 62.25 0 1 1 77.85 20.25a48.38 48.38 0 0 0 67.36 65.25Z%22 fill=%22white%22/></svg>">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style type="text/tailwindcss">
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .ease-bounce {
-            transition-timing-function: cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-    </style>
-
-    <script>
-        // Preload theme to prevent FOUC (Flash of Unstyled Content)
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
-    
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://aistudiocdn.com/react@^19.2.0",
-        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-        "react/": "https://aistudiocdn.com/react@^19.2.0/",
-        "date-fns": "https://aistudiocdn.com/date-fns@^4.1.0",
-        "date-fns/": "https://aistudiocdn.com/date-fns@^4.1.0/"
-      }
+  <meta charset="utf-8" />
+  <title>Rattrap'Ramadan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    .bg-primary-gradient {
+      background-image: linear-gradient(to right, #7C3AED, #EC4899);
     }
-    </script>
+    .text-gradient {
+      background-image: linear-gradient(to right, #7C3AED, #EC4899);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "rxjs": "https://aistudiocdn.com/rxjs@^7.8.2?conditions=es2015",
+    "rxjs/operators": "https://aistudiocdn.com/rxjs@^7.8.2/operators?conditions=es2015",
+    "rxjs/ajax": "https://aistudiocdn.com/rxjs@^7.8.2/ajax?conditions=es2015",
+    "rxjs/webSocket": "https://aistudiocdn.com/rxjs@^7.8.2/webSocket?conditions=es2015",
+    "rxjs/testing": "https://aistudiocdn.com/rxjs@^7.8.2/testing?conditions=es2015",
+    "rxjs/fetch": "https://aistudiocdn.com/rxjs@^7.8.2/fetch?conditions=es2015",
+    "@angular/compiler": "https://next.esm.sh/@angular/compiler@^20.3.6?external=rxjs",
+    "@angular/platform-browser": "https://next.esm.sh/@angular/platform-browser@^20.3.6?external=rxjs",
+    "@angular/core": "https://next.esm.sh/@angular/core@^20.3.6?external=rxjs",
+    "@angular/common": "https://next.esm.sh/@angular/common@^20.3.6?external=rxjs",
+    "@angular/common/locales/fr": "https://next.esm.sh/@angular/common@^20.3.6/locales/fr?external=rxjs",
+    "@angular/common/locales/ar": "https://next.esm.sh/@angular/common@^20.3.6/locales/ar?external=rxjs",
+    "@angular/common/http": "https://next.esm.sh/@angular/common@^20.3.6/http?external=rxjs",
+    "@angular/core/rxjs-interop": "https://next.esm.sh/@angular/core@^20.3.6/rxjs-interop?external=rxjs"
+  }
+}
+</script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-gray-100 dark:bg-gray-900">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+<body class="antialiased bg-stone-50">
+  <app-root></app-root>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(registration => {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,17 @@
+<div class="fixed inset-0 bg-stone-50 z-50 flex flex-col items-center justify-center p-8 text-slate-800">
+  <div class="text-center">
+    <h1 class="text-4xl font-bold bg-primary-gradient animate-gradient bg-clip-text text-transparent">
+      Rattrap'Ramadan
+    </h1>
+    <p class="mt-4 text-lg text-slate-500">Choose your language / اختر لغتك</p>
+  </div>
+
+  <div class="mt-12 w-full max-w-xs space-y-4">
+    <button (click)="setLanguage('fr')" class="w-full px-6 py-4 text-lg font-semibold bg-white rounded-xl hover:bg-stone-100 border border-stone-200 transition-all duration-300 transform hover:scale-105">
+      Français
+    </button>
+    <button (click)="setLanguage('ar')" class="w-full px-6 py-4 text-lg font-semibold bg-white rounded-xl hover:bg-stone-100 border border-stone-200 transition-all duration-300 transform hover:scale-105" style="font-family: 'Amiri', serif;">
+      العربية
+    </button>
+  </div>
+</div>

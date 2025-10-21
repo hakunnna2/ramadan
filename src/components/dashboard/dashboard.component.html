@@ -1,0 +1,48 @@
+<div class="space-y-6 animate-fade-in">
+  @if (isComplete()) {
+    <app-confetti />
+  }
+
+  <div class="bg-white p-6 rounded-2xl shadow-lg shadow-stone-200/50 border border-stone-100/50">
+    <div class="relative w-48 h-48 mx-auto" [class.animate-pulse-once]="pulse()">
+      <svg class="w-full h-full" viewBox="0 0 120 120">
+        <circle class="text-stone-200" stroke-width="12" stroke="currentColor" fill="transparent" r="54" cx="60" cy="60" />
+        <circle class="text-violet-600 transition-all duration-500 ease-in-out" 
+                stroke-width="12" 
+                [style.stroke-dasharray]="circumference"
+                [style.stroke-dashoffset]="strokeDashoffset()" 
+                stroke-linecap="round" 
+                stroke="currentColor" 
+                fill="transparent" 
+                r="54" 
+                cx="60" 
+                cy="60" 
+                transform="rotate(-90 60 60)" />
+      </svg>
+      <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <span class="text-4xl font-bold text-slate-800">{{ remainingDays() }}</span>
+        <span class="text-sm font-medium text-slate-500">{{ t()('remaining') }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div class="bg-white p-4 rounded-2xl shadow-lg shadow-stone-200/50 border border-stone-100/50 text-center">
+      <p class="text-3xl font-bold text-slate-800">{{ completedDays() }}</p>
+      <p class="text-sm font-medium text-slate-500">{{ t()('completed') }}</p>
+    </div>
+    <div class="bg-white p-4 rounded-2xl shadow-lg shadow-stone-200/50 border border-stone-100/50 text-center">
+      <p class="text-3xl font-bold text-slate-800">{{ daysToFast() }}</p>
+      <p class="text-sm font-medium text-slate-500">{{ t()('set_goal') }}</p>
+    </div>
+  </div>
+
+  <div class="bg-white p-4 rounded-2xl shadow-lg shadow-stone-200/50 border border-stone-100/50">
+    <label class="block text-center text-sm font-medium text-slate-500 mb-2">{{ t()('set_goal') }}</label>
+    <div class="flex items-center justify-center gap-4">
+      <button (click)="decrementGoal()" [disabled]="daysToFast() <= 0" class="w-12 h-12 rounded-full bg-stone-100 text-slate-600 text-2xl font-bold hover:bg-stone-200 disabled:opacity-50 transition active:scale-95">-</button>
+      <span class="text-3xl font-bold w-20 text-center">{{ daysToFast() }}</span>
+      <button (click)="incrementGoal()" class="w-12 h-12 rounded-full bg-stone-100 text-slate-600 text-2xl font-bold hover:bg-stone-200 transition active:scale-95">+</button>
+    </div>
+  </div>
+</div>
