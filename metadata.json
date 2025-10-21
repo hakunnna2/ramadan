@@ -1,5 +1,7 @@
-
 {
   "name": "Rattrap'Ramadan",
-  "description": "An application to help track and manage the make-up fasting days for Ramadan. Mark missed days on a calendar, track your progress, and get motivational messages and practical tips."
+  "description": "An application to help track and manage the make-up fasting days for Ramadan. Mark missed days on a calendar, track your progress, and get motivational messages and practical tips.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }
