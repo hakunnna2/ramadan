@@ -1,68 +1,94 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface ProgressTabProps {
-    totalMissed: number;
-    madeUpDays: number;
-    onAddMadeUpDay: () => void;
-    onRemoveMadeUpDay: () => void;
+    fastedCount: number;
+    totalDays: number;
+    onTotalDaysChange: (days: number) => void;
+    onReset: () => void;
 }
 
-const ProgressTab: React.FC<ProgressTabProps> = ({ totalMissed, madeUpDays, onAddMadeUpDay, onRemoveMadeUpDay }) => {
-    
-    const progressPercent = totalMissed > 0 ? Math.round((madeUpDays / totalMissed) * 100) : 0;
+const ProgressTab: React.FC<ProgressTabProps> = ({ fastedCount, totalDays, onTotalDaysChange, onReset }) => {
+    const [localTotalDays, setLocalTotalDays] = useState(totalDays.toString());
 
-    const getMotivationText = () => {
-        const remaining = Math.max(0, totalMissed - madeUpDays);
-        if (totalMissed === 0) {
-            return "Commencez par marquer les jours manqués dans l'onglet Calendrier. 📅";
+    useEffect(() => {
+        setLocalTotalDays(totalDays.toString());
+    }, [totalDays]);
+
+    const percentage = totalDays > 0 ? Math.round((fastedCount / totalDays) * 100) : 0;
+
+    const handleTotalDaysSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const num = parseInt(localTotalDays, 10);
+        if (!isNaN(num) && num > 0) {
+            onTotalDaysChange(num);
+        } else {
+            setLocalTotalDays(totalDays.toString()); // Reset to valid state if input is invalid
         }
-        if (remaining === 0) {
-            return "🎉 MashaAllah ! Vous avez rattrapé tous vos jours de jeûne. Qu'Allah accepte vos efforts ! 🤲";
-        }
-        return `Il vous reste ${remaining} jour${remaining > 1 ? 's' : ''} à rattraper. Courage ! Chaque jour rattrapé est une victoire. 🌙`;
     };
-    
+
     return (
         <div className="space-y-6">
-            <div className="bg-white rounded-2xl p-6 shadow-md">
-                <h2 className="text-xl font-bold text-gray-800 mb-2">✅ Rattrapage en cours</h2>
-                <p className="text-gray-600 mb-6">Cliquez sur le bouton ci-dessous chaque fois que vous rattrapez un jour de jeûne.</p>
-
-                <div className="mb-6">
-                    <div className="flex justify-between text-sm font-medium text-gray-600 mb-2">
-                        <span>Progression</span>
-                        <span>{progressPercent}%</span>
+            <div className="bg-white rounded-2xl p-6 shadow-md text-center">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Votre progression</h2>
+                <div className="relative w-48 h-48 mx-auto">
+                    <svg className="w-full h-full" viewBox="0 0 36 36">
+                        <path
+                            className="text-gray-200"
+                            d="M18 2.0845
+                              a 15.9155 15.9155 0 0 1 0 31.831
+                              a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3.8"
+                        />
+                        <path
+                            className="text-purple-600"
+                            strokeDasharray={`${percentage}, 100`}
+                            d="M18 2.0845
+                              a 15.9155 15.9155 0 0 1 0 31.831
+                              a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3.8"
+                            strokeLinecap="round"
+                            style={{ transition: 'stroke-dasharray 0.5s ease-in-out' }}
+                        />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-4xl font-bold text-gray-800">{percentage}%</span>
+                        <span className="text-gray-500">{fastedCount} / {totalDays} jours</span>
                     </div>
-                    <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                            className="h-full bg-gradient-to-r from-purple-600 to-pink-500 rounded-full transition-all duration-500 ease-out" 
-                            style={{ width: `${progressPercent}%` }}>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <button 
-                        className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-purple-600/30 hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
-                        onClick={onAddMadeUpDay}
-                        disabled={madeUpDays >= totalMissed}
-                    >
-                        ✓ J'ai rattrapé 1 jour
-                    </button>
-                    <button 
-                        className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={onRemoveMadeUpDay}
-                        disabled={madeUpDays === 0}
-                    >
-                        Annuler
-                    </button>
                 </div>
             </div>
 
-            <div className="bg-gradient-to-br from-amber-50 to-orange-100 border-2 border-amber-300 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-amber-800 mb-2">💪 Message d'encouragement</h3>
-                <p className="text-amber-700">{getMotivationText()}</p>
+            <div className="bg-white rounded-2xl p-6 shadow-md">
+                 <h3 className="text-lg font-semibold text-gray-800 mb-3">Jours à rattraper</h3>
+                 <form onSubmit={handleTotalDaysSubmit} className="flex items-center gap-4">
+                     <label htmlFor="total-days-input" className="sr-only">Nombre total de jours à rattraper</label>
+                     <input
+                         id="total-days-input"
+                         type="number"
+                         value={localTotalDays}
+                         onChange={(e) => setLocalTotalDays(e.target.value)}
+                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                         min="1"
+                     />
+                     <button type="submit" className="bg-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors">
+                         Mettre à jour
+                     </button>
+                 </form>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-md">
+                 <h3 className="text-lg font-semibold text-gray-800 mb-3">Réinitialisation</h3>
+                 <p className="text-gray-600 text-sm mb-4">Attention, cette action est irréversible et supprimera tous les jours que vous avez marqués.</p>
+                 <button 
+                     onClick={onReset}
+                     className="w-full bg-pink-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-pink-600 transition-colors"
+                 >
+                     Réinitialiser mes progrès
+                 </button>
             </div>
         </div>
     );

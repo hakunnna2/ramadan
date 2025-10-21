@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tab } from '../types';
 
@@ -6,36 +7,30 @@ interface TabsProps {
     onTabChange: (tab: Tab) => void;
 }
 
-const TabButton: React.FC<{
-    tabId: Tab;
-    activeTab: Tab;
-    onClick: (tab: Tab) => void;
-    icon: string;
-    label: string;
-}> = ({ tabId, activeTab, onClick, icon, label }) => {
-    const isActive = activeTab === tabId;
-    return (
-        <button
-            className={`flex-1 p-3 border-none rounded-md text-sm sm:text-base cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 ${
-                isActive
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                    : 'bg-transparent text-gray-700 hover:bg-gray-100'
-            }`}
-            onClick={() => onClick(tabId)}
-        >
-            <span>{icon}</span> {label}
-        </button>
-    );
-};
-
+const tabConfig = [
+    { id: Tab.Calendar, label: 'Calendrier', icon: '📅' },
+    { id: Tab.Progress, label: 'Progrès', icon: '📊' },
+    { id: Tab.Reminders, label: 'Rappels', icon: '🔔' },
+    { id: Tab.Info, label: 'Infos', icon: 'ℹ️' },
+];
 
 const Tabs: React.FC<TabsProps> = ({ activeTab, onTabChange }) => {
     return (
-        <div className="bg-white rounded-xl p-1 shadow-md flex gap-1 sm:gap-2 mb-6">
-            <TabButton tabId={Tab.Calendar} activeTab={activeTab} onClick={onTabChange} icon="📅" label="Calendrier" />
-            <TabButton tabId={Tab.Progress} activeTab={activeTab} onClick={onTabChange} icon="📊" label="Progression" />
-            <TabButton tabId={Tab.Reminders} activeTab={activeTab} onClick={onTabChange} icon="🔔" label="Rappels" />
-            <TabButton tabId={Tab.Info} activeTab={activeTab} onClick={onTabChange} icon="ℹ️" label="Conseils" />
+        <div className="bg-white rounded-2xl shadow-md p-2 flex justify-around gap-1 sm:gap-2">
+            {tabConfig.map(tab => (
+                <button
+                    key={tab.id}
+                    onClick={() => onTabChange(tab.id)}
+                    className={`flex-1 text-center py-3 px-2 rounded-xl text-sm sm:text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2
+                        ${activeTab === tab.id
+                            ? 'bg-purple-600 text-white shadow-lg transform scale-105'
+                            : 'text-gray-600 hover:bg-purple-100'
+                        }`}
+                >
+                    <span className="mr-2 hidden sm:inline-block">{tab.icon}</span>
+                    {tab.label}
+                </button>
+            ))}
         </div>
     );
 };

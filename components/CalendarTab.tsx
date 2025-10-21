@@ -1,76 +1,102 @@
-import React from 'react';
+import React, { useState } from 'react';
+// FIX: Use named imports for date-fns functions to fix module resolution errors.
+import {
+    addMonths,
+    eachDayOfInterval,
+    endOfMonth,
+    endOfWeek,
+    format,
+    isSameMonth,
+    isToday,
+    startOfMonth,
+    startOfWeek,
+    subMonths,
+} from 'date-fns';
+// FIX: Import French locale directly to resolve module resolution error.
+import fr from 'date-fns/locale/fr';
 
 interface CalendarTabProps {
-    ramadanDays: number;
-    missedDays: boolean[];
-    onToggleDay: (index: number) => void;
-    year: number;
-    onReset: () => void;
-    totalMissed: number;
-    totalMadeUp: number;
-    totalRemaining: number;
+    fastedDays: Set<string>;
+    onToggleDay: (day: string) => void;
 }
 
-const CalendarTab: React.FC<CalendarTabProps> = ({
-    ramadanDays, missedDays, onToggleDay, year, onReset, totalMissed, totalMadeUp, totalRemaining
-}) => {
-    return (
-        <div className="space-y-6">
-            <div className="bg-white rounded-2xl p-6 shadow-md">
-                <h2 className="text-xl font-bold text-gray-800 mb-2">📅 Marquer les jours non jeûnés</h2>
-                <p className="text-gray-600 mb-4">Cliquez sur les jours où vous n'avez pas jeûné pendant le Ramadan. Ils apparaîtront en rose.</p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold bg-purple-100 border-2 border-purple-300 text-purple-700">1</div>
-                        <span>Jour jeûné ✅</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold bg-pink-500 border-2 border-pink-600 text-white">1</div>
-                        <span>Jour non jeûné ❌</span>
-                    </div>
-                </div>
-            </div>
+const CalendarTab: React.FC<CalendarTabProps> = ({ fastedDays, onToggleDay }) => {
+    const [currentMonth, setCurrentMonth] = useState(new Date());
 
-            <div className="bg-white rounded-2xl p-6 shadow-md">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-bold text-gray-800">Calendrier Ramadan {year}</h3>
-                    <button className="text-red-500 underline text-sm font-medium" onClick={onReset}>Réinitialiser</button>
-                </div>
-                <div className="grid grid-cols-5 md:grid-cols-10 gap-3">
-                    {Array.from({ length: ramadanDays }).map((_, i) => (
-                        <button 
-                            key={i}
-                            onClick={() => onToggleDay(i)}
-                            className={`aspect-square rounded-lg border-2 flex items-center justify-center font-bold text-lg cursor-pointer transition-transform duration-200 active:scale-90 ${
-                                missedDays[i] 
-                                ? 'bg-pink-500 border-pink-600 text-white shadow-lg shadow-pink-500/30' 
-                                : 'bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200'
-                            }`}
+    const renderHeader = () => (
+        <div className="flex justify-between items-center mb-4 px-2">
+            <button 
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} 
+                className="p-2 rounded-full hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
+                aria-label="Mois précédent"
+            >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <h3 className="text-xl font-bold text-gray-800 capitalize">
+                {format(currentMonth, 'MMMM yyyy', { locale: fr })}
+            </h3>
+            <button 
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} 
+                className="p-2 rounded-full hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
+                aria-label="Mois suivant"
+            >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    );
+
+    const renderDays = () => {
+        const daysOfWeek = ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'];
+        return (
+            <div className="grid grid-cols-7 gap-1 text-center font-semibold text-gray-500 text-sm">
+                {daysOfWeek.map(day => (
+                    <div key={day}>{day}</div>
+                ))}
+            </div>
+        );
+    };
+
+    const renderCells = () => {
+        const monthStart = startOfMonth(currentMonth);
+        const monthEnd = endOfMonth(monthStart);
+        const startDate = startOfWeek(monthStart, { weekStartsOn: 0 }); // Sunday start for grid consistency
+        const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 });
+
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+        return (
+            <div className="grid grid-cols-7 gap-1 mt-2">
+                {days.map(day => {
+                    const dateString = format(day, 'yyyy-MM-dd');
+                    const isFasted = fastedDays.has(dateString);
+                    const isCurrentMonth = isSameMonth(day, monthStart);
+                    const isTodaysDate = isToday(day);
+
+                    return (
+                        <button
+                            key={day.toString()}
+                            disabled={!isCurrentMonth}
+                            className={`flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 mx-auto rounded-full cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500
+                                ${!isCurrentMonth ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700'}
+                                ${isFasted ? 'bg-purple-600 text-white font-bold shadow-md' : isCurrentMonth ? 'hover:bg-purple-100' : ''}
+                                ${isTodaysDate && !isFasted && isCurrentMonth ? 'border-2 border-pink-500' : ''}
+                            `}
+                            onClick={() => onToggleDay(dateString)}
                         >
-                            {i + 1}
+                            <span className="text-base">{format(day, 'd')}</span>
                         </button>
-                    ))}
-                </div>
+                    );
+                })}
             </div>
+        );
+    };
 
-            <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-2xl p-6 shadow-xl shadow-purple-600/30">
-                <h3 className="text-xl font-bold mb-4">📊 Résumé</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
-                        <span className="block text-4xl font-bold">{totalMissed}</span>
-                        <span className="text-sm opacity-90">Jours manqués</span>
-                    </div>
-                    <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
-                        <span className="block text-4xl font-bold">{totalMadeUp}</span>
-                        <span className="text-sm opacity-90">Jours rattrapés</span>
-                    </div>
-                    <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
-                        <span className="block text-4xl font-bold">{totalRemaining}</span>
-                        <span className="text-sm opacity-90">Jours restants</span>
-                    </div>
-                </div>
-            </div>
+    return (
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-md">
+            <p className="text-gray-600 text-center mb-4 text-sm">Sélectionnez les jours que vous avez jeûnés. Vous avez rattrapé <strong className="text-purple-600">{fastedDays.size}</strong> jour(s).</p>
+            {renderHeader()}
+            {renderDays()}
+            {renderCells()}
         </div>
     );
 };
