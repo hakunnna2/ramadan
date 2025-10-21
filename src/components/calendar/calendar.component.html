@@ -1,1 +1,52 @@
-full contents of src/components/calendar/calendar.component.html
+<div class="bg-white p-4 sm:p-6 rounded-2xl shadow-lg shadow-stone-200/50 border border-stone-100/50 animate-fade-in" #calendarCard
+     [class.fade-out]="isSwiping()" [class.fade-in]="!isSwiping()">
+  
+  <div class="flex items-center justify-between mb-4">
+    <button (click)="previousMonth()" [attr.aria-label]="t()('prev_month')" class="p-2 rounded-full hover:bg-stone-100 transition-colors">
+      <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+    <h2 class="text-xl font-bold text-slate-800 capitalize w-40 text-center">{{ currentMonthLabel() }}</h2>
+    <button (click)="nextMonth()" [attr.aria-label]="t()('next_month')" class="p-2 rounded-full hover:bg-stone-100 transition-colors">
+      <svg class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="grid grid-cols-7 gap-1 text-center text-sm font-medium text-slate-400 mb-2 select-none">
+    @for (day of weekdays(); track day) {
+      <div class="p-2">{{ day }}</div>
+    }
+  </div>
+
+  <div class="grid grid-cols-7 gap-1 select-none">
+    @for (day of calendarDays(); track day.date.toISOString()) {
+      <button [attr.data-date]="day.date.toISOString()"
+              (click)="toggleDayByDate(day.date)"
+              class="relative w-10 h-10 sm:w-12 sm:h-12 mx-auto flex items-center justify-center rounded-full text-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 active:scale-95"
+              [class.text-slate-800]="day.isCurrentMonth"
+              [class.text-slate-300]="!day.isCurrentMonth"
+              [class.font-bold]="day.isToday"
+              [class.bg-primary-gradient]="day.isFasted"
+              [class.text-white]="day.isFasted"
+              [class.hover:bg-stone-100]="day.isCurrentMonth && !day.isFasted"
+              [disabled]="!day.isCurrentMonth">
+        {{ day.date.getDate() }}
+        @if (day.isToday) {
+          <span class="absolute bottom-1.5 h-1 w-1 rounded-full" [class.bg-violet-600]="!day.isFasted" [class.bg-white]="day.isFasted"></span>
+        }
+        <span class="sr-only">
+          {{ day.date | date:'longDate' }} 
+          @if(day.isFasted){, {{ t()('day_fasted') }}} 
+          @if(day.isToday){, {{ t()('day_today') }}}
+        </span>
+      </button>
+    }
+  </div>
+
+  <div class="mt-4 pt-4 border-t border-stone-200 text-center">
+    <p class="text-sm font-medium text-slate-500">{{ monthlySummaryText() }}</p>
+  </div>
+</div>

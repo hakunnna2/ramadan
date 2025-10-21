@@ -1,86 +1,100 @@
-// FIX: Create content for missing translation service file.
 import { Injectable, computed, inject } from '@angular/core';
 import { StateService } from './state.service';
 
+// This is a union of all translation keys used in the app.
+// It's used for type safety.
+export type TranslationKey =
+  | 'dashboard'
+  | 'calendar'
+  | 'info'
+  | 'completed'
+  | 'remaining'
+  | 'set_goal'
+  | 'monthly_summary'
+  | 'share_title'
+  | 'share_text'
+  | 'install'
+  | 'install_app'
+  | 'install_app_description'
+  | 'about_app_title'
+  | 'about_app_content'
+  | 'share_the_app'
+  | 'share_app_description'
+  | 'share'
+  | 'day_fasted'
+  | 'day_today'
+  | 'prev_month'
+  | 'next_month'
+  // FIX: Add missing translation keys for prayer times component.
+  | 'prayer_times_for'
+  | 'select_city'
+  | 'fajr'
+  | 'sunrise'
+  | 'dhuhr'
+  | 'asr'
+  | 'maghrib'
+  | 'isha';
+
+
+const fr = {
+  dashboard: 'Tableau de bord',
+  calendar: 'Calendrier',
+  info: 'Infos',
+  completed: 'Complétés',
+  remaining: 'Restants',
+  set_goal: 'Objectif',
+  monthly_summary: '{fasted} sur {total} jours jeûnés ce mois-ci',
+  share_title: 'Rattrap\' Ramadan - Suivi de jeûne',
+  share_text: 'Suis tes jours de jeûne à rattraper pour le Ramadan avec cette application simple !',
+  install: 'Installer',
+  install_app: 'Installer l\'application',
+  install_app_description: 'Pour un accès rapide, ajoutez-la à votre écran d\'accueil.',
+  about_app_title: 'À propos de l\'application',
+  about_app_content: "Rattrap'Ramadan est votre compagnon personnel pour vous aider à suivre les jours de jeûne de Ramadan à rattraper avec facilité et sérénité. Nous avons conçu cette application avec une interface épurée et motivante pour vous accompagner dans votre cheminement spirituel. Gardez vos progrès organisés et restez concentrée sur vos objectifs.",
+  share_the_app: 'Partager l\'application',
+  share_app_description: 'Aidez vos sœurs et maman à suivre leur jeûne.',
+  share: 'Partager',
+  day_fasted: 'Jeûné',
+  day_today: 'Aujourd\'hui',
+  prev_month: 'Mois précédent',
+  next_month: 'Mois suivant',
+  // FIX: Add missing translations for prayer times component.
+  prayer_times_for: 'Horaires de prière pour',
+  select_city: 'Sélectionner une ville',
+  fajr: 'Fajr',
+  sunrise: 'Lever du soleil',
+  dhuhr: 'Dhuhr',
+  asr: 'Asr',
+  maghrib: 'Maghrib',
+  isha: 'Isha',
+};
+
+type Translations = typeof fr;
+
+const translations: Record<string, Translations> = { fr };
+
 @Injectable({ providedIn: 'root' })
 export class TranslationService {
-  stateService = inject(StateService);
+  private stateService = inject(StateService);
 
-  private currentLang = computed(() => this.stateService.language() || 'fr');
+  private currentLanguage = this.stateService.language;
   
-  private translations = {
-    fr: {
-      // General
-      dashboard: 'Tableau de bord',
-      calendar: 'Calendrier',
-      info: 'Infos',
-      // Dashboard
-      fasting_goal: 'Objectif de jeûne',
-      days: 'jours',
-      completed: 'Complétés',
-      remaining: 'Restants',
-      well_done: 'Bravo !',
-      goal_achieved: 'Objectif atteint ! Vous avez rattrapé tous vos jours.',
-      // Calendar
-      mark_as_fasted: 'Jour jeûné',
-      unmark_as_fasted: 'Démarquer',
-      // Info
-      about_app: 'À propos de l\'application',
-      app_description: 'Cette application vous aide à suivre les jours de jeûne que vous devez rattraper pour le Ramadan.',
-      share_app: 'Partager l\'application',
-      install_app: 'Installer l\'application',
-      install_app_description: 'Ajoutez cette application à votre écran d\'accueil pour un accès facile.',
-      install: 'Installer',
-      share_title: 'Rattrap Ramadan - Suivi de jeûne',
-      share_text: 'Suivez facilement vos jours de jeûne à rattraper avec cette application !',
-      // Prayer Times
-      prayer_times_for: 'Horaires de prière pour',
-      select_city: 'Sélectionner une ville',
-      fajr: 'Fajr',
-      sunrise: 'Chourok',
-      dhuhr: 'Dhuhr',
-      asr: 'Asr',
-      maghrib: 'Maghrib',
-      isha: 'Isha',
-    },
-    ar: {
-      // General
-      dashboard: 'لوحة التحكم',
-      calendar: 'التقويم',
-      info: 'معلومات',
-      // Dashboard
-      fasting_goal: 'أيام القضاء',
-      days: 'أيام',
-      completed: 'أيام القضاء',
-      remaining: 'الأيام المتبقية',
-      well_done: 'أحسنت!',
-      goal_achieved: 'لقد أتممت صيام كل الأيام!',
-      // Calendar
-      mark_as_fasted: 'تم الصيام',
-      unmark_as_fasted: 'إلغاء',
-      // Info
-      about_app: 'حول التطبيق',
-      app_description: 'هذا التطبيق يساعدك على تتبع أيام الصيام التي يجب عليك قضاؤها من شهر رمضان.',
-      share_app: 'مشاركة التطبيق',
-      install_app: 'تثبيت التطبيق',
-      install_app_description: 'أضف هذا التطبيق إلى شاشتك الرئيسية لسهولة الوصول إليه.',
-      install: 'تثبيت',
-      share_title: 'قضاء رمضان - متابعة الصيام',
-      share_text: 'تابع أيام الصيام التي عليك قضاؤها بسهولة مع هذا التطبيق!',
-      // Prayer Times
-      prayer_times_for: 'مواقيت الصلاة لمدينة',
-      select_city: 'اختر مدينة',
-      fajr: 'الفجر',
-      sunrise: 'الشروق',
-      dhuhr: 'الظهر',
-      asr: 'العصر',
-      maghrib: 'المغرب',
-      isha: 'العشاء',
-    }
-  };
+  private currentTranslations = computed(() => translations[this.currentLanguage()] || fr);
 
-  t = computed(() => (key: keyof typeof this.translations['fr']) => {
-    const lang = this.currentLang();
-    return this.translations[lang][key] || key;
+  // The 't' property is a signal that holds the translation function.
+  // This allows components to react to language changes automatically if multi-language support is added.
+  public t = computed(() => {
+    // This is the translation function
+    return (key: TranslationKey, context?: Record<string, string | number>): string => {
+      let translation = this.currentTranslations()[key as keyof Translations] || key;
+      if (context) {
+        for (const k in context) {
+          if (Object.prototype.hasOwnProperty.call(context, k)) {
+            translation = translation.replace(`{${k}}`, String(context[k]));
+          }
+        }
+      }
+      return translation;
+    };
   });
 }

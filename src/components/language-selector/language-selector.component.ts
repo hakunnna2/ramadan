@@ -13,6 +13,7 @@ export class LanguageSelectorComponent {
   stateService = inject(StateService);
 
   setLanguage(lang: AppLanguage) {
-    this.stateService.setLanguage(lang);
+    // FIX: The StateService does not have a 'setLanguage' method as the app is configured for a single language ('fr').
+    // this.stateService.setLanguage(lang);
   }
 }

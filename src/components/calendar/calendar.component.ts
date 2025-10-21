@@ -1,88 +1,41 @@
-// FIX: Create content for missing calendar component file.
-import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, effect, ElementRef, AfterViewInit, OnDestroy, Renderer2, ViewChild, LOCALE_ID } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { StateService } from '../../services/state.service';
-import { TranslationService } from '../../services/translation.service';
+import { TranslationService, TranslationKey } from '../../services/translation.service';
 
 interface CalendarDay {
   date: Date;
   isToday: boolean;
   isCurrentMonth: boolean;
   isFasted: boolean;
+  isWeekend: boolean;
 }
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="p-4 md:p-6 bg-white dark:bg-slate-900 rounded-lg shadow-lg shadow-slate-200/50 dark:shadow-black/50">
-      <div class="flex items-center justify-between mb-4">
-        <button (click)="previousMonth()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Previous month">
-          <svg class="w-6 h-6 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-200 capitalize">{{ currentMonthLabel() }}</h2>
-        <button (click)="nextMonth()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Next month">
-          <svg class="w-6 h-6 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-      <div class="grid grid-cols-7 gap-1 text-center text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-        @for (day of weekDays(); track day) {
-          <div class="p-2">{{ day }}</div>
-        }
-      </div>
-      <div class="grid grid-cols-7 gap-1">
-        @for (day of calendarDays(); track day.date.toISOString()) {
-          <button 
-            (click)="toggleDay(day)"
-            class="p-2 h-10 w-10 flex items-center justify-center rounded-lg text-center transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 dark:focus:ring-offset-slate-900"
-            [class.text-slate-700]="day.isCurrentMonth"
-            [class.dark:text-slate-200]="day.isCurrentMonth"
-            [class.text-slate-400]="!day.isCurrentMonth"
-            [class.dark:text-slate-500]="!day.isCurrentMonth"
-            [class.bg-violet-100]="day.isToday && !day.isFasted"
-            [class.dark:bg-violet-900/50]="day.isToday && !day.isFasted"
-            [class.font-bold]="day.isToday"
-            [class.hover:bg-slate-100]="day.isCurrentMonth && !day.isFasted"
-            [class.dark:hover:bg-slate-800]="day.isCurrentMonth && !day.isFasted"
-            [class.!bg-pink-500]="day.isFasted"
-            [class.!text-white]="day.isFasted"
-            [disabled]="!day.isCurrentMonth"
-            [attr.aria-label]="day.date.toDateString() + (day.isFasted ? ' (Fasted)' : '')"
-            >
-            {{ day.date.getDate() }}
-          </button>
-        }
-      </div>
-      <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-400">
-        <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded-full bg-pink-500"></span>
-            <span>{{ t()('mark_as_fasted') }}</span>
-        </div>
-      </div>
-    </div>
-  `,
+  imports: [CommonModule, DatePipe],
+  templateUrl: './calendar.component.html',
+  styleUrls: ['./calendar.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CalendarComponent {
+export class CalendarComponent implements AfterViewInit, OnDestroy {
   stateService = inject(StateService);
   translationService = inject(TranslationService);
   t = this.translationService.t;
-
+  elementRef = inject(ElementRef);
+  renderer = inject(Renderer2);
+  locale = inject(LOCALE_ID);
+  
   private today = new Date();
   
   viewDate = signal(new Date());
-  
-  fastedDates = this.stateService.fastedDates;
-  private fastedDatesSet = computed(() => new Set(this.fastedDates()));
+  isSwiping = signal(false);
 
-  weekDays = computed(() => {
-    const lang = this.stateService.language() || 'fr';
-    const format = new Intl.DateTimeFormat(lang, { weekday: 'short' });
+  private fastedDatesSet = computed(() => new Set(this.stateService.fastedDates()));
+  
+  weekdays = computed(() => {
+    const format = new Intl.DateTimeFormat(this.locale, { weekday: 'short' });
     // A week that starts with Monday, Jan 2, 2023
     return [2, 3, 4, 5, 6, 7, 8].map(day => format.format(new Date(2023, 0, day)));
   });
@@ -95,12 +48,12 @@ export class CalendarComponent {
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
 
-    // Adjust to Monday as the first day of the week (0=Mon, 6=Sun)
     const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
     const daysInMonth = lastDayOfMonth.getDate();
 
     const days: CalendarDay[] = [];
     const fastedSet = this.fastedDatesSet();
+    const todayString = this.today.toISOString().split('T')[0];
 
     // Days from previous month
     for (let i = firstDayOfWeek; i > 0; i--) {
@@ -110,18 +63,20 @@ export class CalendarComponent {
         isToday: false,
         isCurrentMonth: false,
         isFasted: this.isDayFasted(date, fastedSet),
+        isWeekend: [0, 6].includes(date.getDay())
       });
     }
 
     // Days of current month
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(year, month, i);
-      const isToday = date.toDateString() === this.today.toDateString();
+      const isToday = date.toISOString().split('T')[0] === todayString;
       days.push({
         date,
         isToday,
         isCurrentMonth: true,
         isFasted: this.isDayFasted(date, fastedSet),
+        isWeekend: [0, 6].includes(date.getDay())
       });
     }
 
@@ -135,6 +90,7 @@ export class CalendarComponent {
         isToday: false,
         isCurrentMonth: false,
         isFasted: this.isDayFasted(date, fastedSet),
+        isWeekend: [0, 6].includes(date.getDay())
       });
     }
     
@@ -142,17 +98,146 @@ export class CalendarComponent {
   });
 
   currentMonthLabel = computed(() => {
-    const lang = this.stateService.language() || 'fr';
-    return this.viewDate().toLocaleDateString(lang, { month: 'long', year: 'numeric' });
+    return this.viewDate().toLocaleDateString(this.locale, { month: 'long', year: 'numeric' });
   });
+
+  monthlyFastedDays = computed(() => {
+    const view = this.viewDate();
+    const year = view.getFullYear();
+    const month = view.getMonth();
+    const fastedSet = this.fastedDatesSet();
+    let count = 0;
+    fastedSet.forEach(dateStr => {
+      const date = new Date(dateStr);
+      if (date.getFullYear() === year && date.getMonth() === month) {
+        count++;
+      }
+    });
+    return count;
+  });
+  
+  daysInCurrentMonth = computed(() => {
+      const view = this.viewDate();
+      return new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+  });
+
+  monthlySummaryText = computed(() => {
+    return this.t()('monthly_summary' as TranslationKey, {
+      fasted: this.monthlyFastedDays(),
+      total: this.daysInCurrentMonth()
+    });
+  });
+
+  // Drag to select logic
+  isDragging = false;
+  dragMode: 'add' | 'remove' | null = null;
+  
+  private unlistenFns: (() => void)[] = [];
+
+  ngAfterViewInit() {
+    this.setupDragListeners();
+    this.setupSwipeListeners();
+  }
+
+  ngOnDestroy() {
+    this.unlistenFns.forEach(fn => fn());
+  }
+
+  private setupDragListeners() {
+    const calendarEl = this.elementRef.nativeElement;
+    
+    const onDragStart = (event: MouseEvent | TouchEvent) => {
+      event.preventDefault();
+      this.isDragging = true;
+      const dayEl = (event.target as HTMLElement).closest('[data-date]');
+      if (dayEl) {
+        const dateStr = dayEl.getAttribute('data-date')!;
+        const date = new Date(dateStr);
+        this.dragMode = this.isDayFasted(date, this.fastedDatesSet()) ? 'remove' : 'add';
+        this.toggleDayByDate(date);
+      }
+    };
+    
+    const onDragMove = (event: MouseEvent | TouchEvent) => {
+      if (!this.isDragging) return;
+      event.preventDefault();
+      
+      const el = event.type === 'touchmove'
+        ? document.elementFromPoint((event as TouchEvent).touches[0].clientX, (event as TouchEvent).touches[0].clientY)
+        : event.target;
+
+      const dayEl = (el as HTMLElement)?.closest('[data-date]');
+      if (dayEl) {
+        const dateStr = dayEl.getAttribute('data-date')!;
+        const date = new Date(dateStr);
+        if (this.dragMode === 'add') {
+          this.stateService.addFastedDate(date);
+        } else if (this.dragMode === 'remove') {
+          this.stateService.removeFastedDate(date);
+        }
+      }
+    };
+
+    const onDragEnd = () => {
+      this.isDragging = false;
+      this.dragMode = null;
+    };
+    
+    this.unlistenFns.push(this.renderer.listen(calendarEl, 'mousedown', onDragStart));
+    this.unlistenFns.push(this.renderer.listen(window, 'mousemove', onDragMove));
+    this.unlistenFns.push(this.renderer.listen(window, 'mouseup', onDragEnd));
+    
+    this.unlistenFns.push(this.renderer.listen(calendarEl, 'touchstart', onDragStart));
+    this.unlistenFns.push(this.renderer.listen(window, 'touchmove', onDragMove));
+    this.unlistenFns.push(this.renderer.listen(window, 'touchend', onDragEnd));
+  }
+
+  // Swipe gesture logic
+  private touchStartX = 0;
+  private setupSwipeListeners() {
+      const calendarEl = this.elementRef.nativeElement;
+      
+      const onTouchStart = (event: TouchEvent) => {
+          if(this.isDragging) return;
+          this.touchStartX = event.touches[0].clientX;
+      };
+
+      const onTouchEnd = (event: TouchEvent) => {
+          if(this.isDragging || this.touchStartX === 0) return;
+          const touchEndX = event.changedTouches[0].clientX;
+          const deltaX = touchEndX - this.touchStartX;
+          this.touchStartX = 0;
+
+          if (Math.abs(deltaX) > 50) { // Threshold for swipe
+              this.handleSwipe(deltaX > 0);
+          }
+      };
+      
+      this.unlistenFns.push(this.renderer.listen(calendarEl, 'touchstart', onTouchStart));
+      this.unlistenFns.push(this.renderer.listen(calendarEl, 'touchend', onTouchEnd));
+  }
+  
+  private handleSwipe(isSwipeRight: boolean) {
+      this.isSwiping.set(true);
+      setTimeout(() => {
+          if (isSwipeRight) {
+              this.previousMonth();
+          } else {
+              this.nextMonth();
+          }
+          this.isSwiping.set(false);
+      }, 150); // duration of fadeOut animation
+  }
+
 
   private isDayFasted(date: Date, fastedSet: Set<string>): boolean {
     return fastedSet.has(date.toISOString().split('T')[0]);
   }
 
-  toggleDay(day: CalendarDay) {
-    if (!day.isCurrentMonth) return;
-    this.stateService.toggleFastedDate(day.date);
+  toggleDayByDate(date: Date) {
+    if (!this.isDragging) {
+        this.stateService.toggleFastedDate(date);
+    }
   }
 
   previousMonth() {

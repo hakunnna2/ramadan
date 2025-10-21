@@ -1,24 +1,22 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
 
-export type AppLanguage = 'fr' | 'ar';
+export type AppLanguage = 'fr';
 export type AppTab = 'dashboard' | 'calendar' | 'info';
 
 export interface AppState {
-  language: AppLanguage | null;
+  language: AppLanguage;
   daysToFast: number;
   fastedDates: string[]; // ISO date strings
   activeTab: AppTab;
-  // FIX: Add prayerCity to the app state to fix missing property errors.
   prayerCity: string;
 }
 
 const initialState: AppState = {
-  language: null,
+  language: 'fr',
   daysToFast: 0,
   fastedDates: [],
   activeTab: 'dashboard',
-  // FIX: Add prayerCity to initial state.
-  prayerCity: 'Rabat',
+  prayerCity: 'Paris',
 };
 
 @Injectable({ providedIn: 'root' })
@@ -31,7 +29,6 @@ export class StateService {
   daysToFast = computed(() => this.state().daysToFast);
   fastedDates = computed(() => this.state().fastedDates);
   activeTab = computed(() => this.state().activeTab);
-  // FIX: Add a computed signal for prayerCity.
   prayerCity = computed(() => this.state().prayerCity);
 
   constructor() {
@@ -50,7 +47,8 @@ export class StateService {
         const parsed = JSON.parse(savedState);
         // Clean up old properties that might exist in storage
         delete parsed.theme;
-        // FIX: Remove deletion of prayerCity to allow it to be loaded from storage.
+        // Force language to French
+        parsed.language = 'fr';
         this.state.set({ ...initialState, ...parsed });
       } else {
         this.state.set(initialState);
@@ -70,10 +68,6 @@ export class StateService {
   }
 
   // Actions
-  setLanguage(language: AppLanguage) {
-    this.state.update(s => ({ ...s, language }));
-  }
-
   setDaysToFast(days: number) {
     this.state.update(s => ({ ...s, daysToFast: Math.max(0, days) }));
   }
@@ -91,11 +85,33 @@ export class StateService {
     });
   }
 
+  addFastedDate(date: Date) {
+    const dateString = date.toISOString().split('T')[0];
+    this.state.update(s => {
+      const fastedDates = new Set(s.fastedDates);
+      if (!fastedDates.has(dateString)) {
+        fastedDates.add(dateString);
+      }
+      return { ...s, fastedDates: Array.from(fastedDates) };
+    });
+  }
+
+  removeFastedDate(date: Date) {
+    const dateString = date.toISOString().split('T')[0];
+    this.state.update(s => {
+      const fastedDates = new Set(s.fastedDates);
+      if (fastedDates.has(dateString)) {
+        fastedDates.delete(dateString);
+      }
+      return { ...s, fastedDates: Array.from(fastedDates) };
+    });
+  }
+
   setActiveTab(tab: AppTab) {
     this.state.update(s => ({ ...s, activeTab: tab }));
   }
 
-  // FIX: Add method to update prayerCity, fixing missing method error.
+  // Fix: Add setPrayerCity method
   setPrayerCity(city: string) {
     this.state.update(s => ({ ...s, prayerCity: city }));
   }

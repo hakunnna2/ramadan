@@ -1,11 +1,11 @@
-import { Component, ChangeDetectionStrategy, inject, computed, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
 import { InfoComponent } from './components/info/info.component';
-import { LanguageSelectorComponent } from './components/language-selector/language-selector.component';
 import { TranslationService } from './services/translation.service';
 import { StateService } from './services/state.service';
+import { InstallPromptComponent } from './components/install-prompt/install-prompt.component';
 
 type Tab = 'dashboard' | 'calendar' | 'info';
 
@@ -17,7 +17,7 @@ type Tab = 'dashboard' | 'calendar' | 'info';
     DashboardComponent,
     CalendarComponent,
     InfoComponent,
-    LanguageSelectorComponent,
+    InstallPromptComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
@@ -28,7 +28,6 @@ export class AppComponent {
   translationService = inject(TranslationService);
   t = this.translationService.t;
   
-  language = this.stateService.language;
   activeTab = this.stateService.activeTab;
 
   tabs: { id: Tab; labelKey: any; iconOutline: string; iconFilled: string }[] = [
@@ -38,12 +37,8 @@ export class AppComponent {
   ];
 
   constructor() {
-    effect(() => {
-      const lang = this.language();
-      const dir = lang === 'ar' ? 'rtl' : 'ltr';
-      document.documentElement.lang = lang;
-      document.documentElement.dir = dir;
-    });
+    document.documentElement.lang = 'fr';
+    document.documentElement.dir = 'ltr';
   }
 
   setActiveTab(tab: Tab) {

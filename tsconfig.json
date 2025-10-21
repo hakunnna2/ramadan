@@ -27,15 +27,6 @@
   "files": [
     "./index.tsx"
   ],
-  "exclude": [
-    "src",
-    "node_modules",
-    "dist",
-    "build",
-    "**/.*",
-    "**/*.spec.ts",
-    "**/*.spec.tsx"
-  ],
   "angularCompilerOptions": {
     "disableTypeScriptVersionCheck": true
   }
