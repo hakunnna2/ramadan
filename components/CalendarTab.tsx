@@ -14,7 +14,7 @@ import {
     subMonths
 } from 'date-fns';
 // FIX: Corrected import for the 'fr' locale to resolve module resolution error. This should also fix the other related date-fns import errors.
-import fr from 'date-fns/locale/fr';
+import { fr } from 'date-fns/locale/fr';
 
 interface CalendarTabProps {
     fastedDates: string[];

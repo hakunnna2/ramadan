@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Reminder } from '../types';
 import { format } from 'date-fns';
-import fr from 'date-fns/locale/fr';
+import { fr } from 'date-fns/locale/fr';
 
 interface RemindersTabProps {
     reminders: Reminder[];
