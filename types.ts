@@ -1,6 +1,6 @@
 export enum Tab {
   Calendar = 'calendar',
-  Progress = 'progress',
+  Dashboard = 'dashboard',
   Info = 'info',
   Reminders = 'reminders',
 }

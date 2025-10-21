@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const InfoItem: React.FC<{
@@ -7,14 +6,14 @@ const InfoItem: React.FC<{
     borderColor: string;
 }> = ({ title, content, borderColor }) => (
     <div className={`border-l-4 ${borderColor} pl-4 mb-4`}>
-        <h4 className="font-semibold text-gray-800 mb-1">{title}</h4>
-        <p className="text-gray-600 text-sm">{content}</p>
+        <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-1">{title}</h4>
+        <p className="text-gray-600 dark:text-gray-300 text-sm">{content}</p>
     </div>
 );
 
 const TipItem: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-     <li className="flex gap-3 items-start text-gray-700">
-        <span className="text-purple-600 font-bold mt-1">•</span>
+     <li className="flex gap-3 items-start text-gray-700 dark:text-gray-200">
+        <span className="text-purple-600 dark:text-purple-400 font-bold mt-1">•</span>
         <span>{children}</span>
     </li>
 );
@@ -22,8 +21,8 @@ const TipItem: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 const InfoTab: React.FC = () => {
     return (
         <div className="space-y-6">
-            <div className="bg-white rounded-2xl p-6 shadow-md">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">🕌 Rappels islamiques</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">🕌 Rappels islamiques</h2>
                 <InfoItem 
                     title="Obligation du rattrapage"
                     content="Le rattrapage des jours de jeûne manqués est obligatoire (fardh) et doit être effectué avant le Ramadan suivant."
@@ -41,8 +40,8 @@ const InfoTab: React.FC = () => {
                 />
             </div>
             
-            <div className="bg-white rounded-2xl p-6 shadow-md">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">💡 Conseils pratiques</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">💡 Conseils pratiques</h2>
                 <ul className="space-y-3">
                    <TipItem>Planifiez votre rattrapage : choisissez des jours où vous êtes disponible et en forme</TipItem>
                    <TipItem>Les lundis et jeudis sont des jours recommandés pour jeûner</TipItem>
@@ -52,9 +51,9 @@ const InfoTab: React.FC = () => {
                 </ul>
             </div>
 
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-blue-800 mb-2">ℹ️ Note importante</h3>
-                <p className="text-blue-700 text-sm">Cette application est un outil d'aide au suivi personnel. Pour toute question religieuse spécifique, veuillez consulter un savant ou une personne qualifiée en sciences islamiques.</p>
+            <div className="bg-blue-50 dark:bg-blue-900/40 border-2 border-blue-200 dark:border-blue-500/50 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200 mb-2">ℹ️ Note importante</h3>
+                <p className="text-blue-700 dark:text-blue-300 text-sm">Cette application est un outil d'aide au suivi personnel. Pour toute question religieuse spécifique, veuillez consulter un savant ou une personne qualifiée en sciences islamiques.</p>
             </div>
         </div>
     );

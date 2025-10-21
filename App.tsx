@@ -3,7 +3,7 @@ import { Tab, Reminder } from './types';
 import Header from './components/Header';
 import Tabs from './components/Tabs';
 import CalendarTab from './components/CalendarTab';
-import ProgressTab from './components/ProgressTab';
+import DashboardTab from './components/DashboardTab';
 import InfoTab from './components/InfoTab';
 import RemindersTab from './components/RemindersTab';
 import Footer from './components/Footer';
@@ -11,6 +11,16 @@ import SaveIndicator from './components/SaveIndicator';
 import InstallPrompt from './components/InstallPrompt';
 
 const App: React.FC = () => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('theme')) {
+        return localStorage.getItem('theme') as 'light' | 'dark';
+    }
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+    return 'light';
+  });
+
   const [totalDays, setTotalDays] = useState<number>(() => {
     const saved = localStorage.getItem('totalDays');
     return saved ? parseInt(saved, 10) : 30;
@@ -42,6 +52,19 @@ const App: React.FC = () => {
   // PWA Install Prompt state
   const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  };
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -204,9 +227,9 @@ const App: React.FC = () => {
     switch (activeTab) {
       case Tab.Calendar:
         return <CalendarTab fastedDays={fastedDays} onToggleDay={handleToggleDay} />;
-      case Tab.Progress:
-        return <ProgressTab 
-          fastedCount={fastedDays.size}
+      case Tab.Dashboard:
+        return <DashboardTab 
+          fastedDays={fastedDays}
           totalDays={totalDays}
           onTotalDaysChange={setTotalDays}
           onReset={handleResetProgress}
@@ -227,8 +250,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans">
-      <Header remainingDays={remainingDays} year={new Date().getFullYear()} />
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen font-sans">
+      <Header 
+        remainingDays={remainingDays} 
+        year={new Date().getFullYear()} 
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+      />
       <main className="max-w-7xl mx-auto p-4 sm:p-6">
         <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
         <div className="mt-6">
